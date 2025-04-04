@@ -8,6 +8,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Data;
 
@@ -15,6 +17,7 @@ import lombok.Data;
 @Entity
 public class Goals {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "goal_id")
     private int goalId;
 
