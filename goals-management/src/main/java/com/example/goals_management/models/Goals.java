@@ -19,7 +19,7 @@ public class Goals {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "goal_id")
-    private int goalId;
+    private long goalId;
 
     private String description;
 
