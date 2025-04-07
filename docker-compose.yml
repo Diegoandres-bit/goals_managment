@@ -1,0 +1,46 @@
+services:
+    #  --------------------------------------------
+    backend-goals-manag:
+      build:
+        context: ./goals-management
+        dockerfile: Dockerfile
+      container_name: goals-manag
+      depends_on:
+        mysql-goals-manag:
+          condition: service_healthy
+      ports:
+        - "9020:8080"
+      networks:
+        - goals-manag
+    #  --------------------------------------------
+    mysql-goals-manag:
+      build:
+        context: ./MySQL
+        dockerfile: Dockerfile
+      container_name: mysql-goals-manag
+      volumes:
+        - ./MySQL/mysql_data:/var/lib/mysql
+      ports:
+        - "8012:3306"
+      networks:
+        - goals-manag
+      healthcheck:
+        test: [ "CMD","mysql", "-u", "sdgrh", "-psdgrh123*" ]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+    #  --------------------------------------------
+    adminer-goals-manag:
+      image: adminer
+      container_name: adminer-goals-manag
+      depends_on:
+        - mysql-goals-manag
+      ports:
+        - "9010:8080"
+      networks:
+        - goals-manag
+  #  --------------------------------------------
+networks:
+  goals-manag:
+    driver: bridge
+    name: goals-manag
