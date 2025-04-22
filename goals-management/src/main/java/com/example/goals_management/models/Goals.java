@@ -2,15 +2,18 @@ package com.example.goals_management.models;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.Data;
 
 /**
@@ -25,10 +28,14 @@ public class Goals {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "goal_id")
-    private long goalId;
+    private Long goalId;
 
     /** Detailed description of the goal */
     private String description;
+
+    
+    @Column(name = "user_id")
+    private Long userId;
 
     /** Estimated date for goal completion */
     @Column(name = "estimated_date")
@@ -49,6 +56,10 @@ public class Goals {
     @Column(name = "status", columnDefinition = "TINYINT(1)")
     private Boolean status;
 
+    /** Daily hours allocated for the goal */
+    @Column(name = "daily_hours")
+    private float dailyHours;
+
     /** Timestamp when the goal was created */
     @CreationTimestamp
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
@@ -58,4 +69,8 @@ public class Goals {
     @UpdateTimestamp
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Task> tasks;
+    
 }

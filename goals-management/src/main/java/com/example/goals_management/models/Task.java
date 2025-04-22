@@ -27,7 +27,7 @@ public class Task {
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_id")
-    private long taskId;
+    private Long taskId;
 
     /** Title of the task */
     private String title;
@@ -36,7 +36,7 @@ public class Task {
     private String description;
 
     /** Current status of the task */
-    private String status;
+    private Boolean status;
     
     /** Timestamp when the task was created */
     @CreationTimestamp
@@ -51,5 +51,5 @@ public class Task {
     /** Reference to the parent goal. Represents many-to-one relationship with Goals */
     @ManyToOne
     @JoinColumn(name = "goal_id")
-    private Goals goals;
+    private Goals goal;
 }

@@ -3,7 +3,8 @@ package com.example.goals_management.dto;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.*;
-
+import lombok.Data;
+@Data
 public class GoalDTO {
 
     @NotBlank(message = "Description is required")
@@ -21,55 +22,13 @@ public class GoalDTO {
     private float dailyHours;
 
     @NotBlank(message = "Status is required")
-    private String status;
+    private Boolean status;
 
-    // Getters y setters
+    private Long userId;
 
-    public String getDescription() {
-        return description;
-    }
+    private LocalDate assignmentDate;
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDate getEstimatedDate() {
-        return estimatedDate;
-    }
-
-    public void setEstimatedDate(LocalDate estimatedDate) {
-        this.estimatedDate = estimatedDate;
-    }
-
-    public LocalDate getDeliveryDate() {
-        return deliveryDate;
-    }
-
-    public void setDeliveryDate(LocalDate deliveryDate) {
-        this.deliveryDate = deliveryDate;
-    }
-
-    public double getTarget() {
-        return target;
-    }
-
-    public void setTarget(double target) {
-        this.target = target;
-    }
-
-    public float getDailyHours() {
-        return dailyHours;
-    }
-
-    public void setDailyHours(float dailyHours) {
-        this.dailyHours = dailyHours;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    
+  
+    
 }
