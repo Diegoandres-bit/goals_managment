@@ -64,8 +64,10 @@ public class GoalsService {
             return Optional.of(savedGoalDTO);
     }
     
-    public Optional<GoalGetDTO> findGoal(Long id){
-        return Optional.of(goalMapper.toGoalGetDTO(goalsRepo.findById(id).get()));
+    public Optional<GoalGetDTO> findGoal(Long id) {
+        Goals goal = goalsRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Goal not found"));
+        return Optional.of(goalMapper.toGoalGetDTO(goal));
     }
 
 }

@@ -123,6 +123,20 @@ public class GoalServiceTest {
         when(goalRepository.findById(2L)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class, () -> goalService.assignGoalToUser(assignGoalDTO));
    }
+   @Test
+   public void findGoalTest() {
+       GoalGetDTO dto = new GoalGetDTO();
+       dto.setGoalId(1L);
+       dto.setDescription("Test Goal");
 
+       when(goalRepository.findById(1L)).thenReturn(Optional.of(goal));
+       when(goalMapper.toGoalGetDTO(goal)).thenReturn(dto);
+
+       Optional<GoalGetDTO> result = goalService.findGoal(1L);
+
+       assertTrue(result.isPresent());
+       assertEquals(1L, result.get().getGoalId());
+       assertEquals("Test Goal", result.get().getDescription());
+   }
 
 }
