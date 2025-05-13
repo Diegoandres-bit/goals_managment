@@ -6,13 +6,13 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.goals_management.dto.GoalGetDTO;
 import com.example.goals_management.dto.TaskByGoalIdDTO;
 import com.example.goals_management.dto.TaskDTO;
 import com.example.goals_management.dto.TaskGetDTO;
 import com.example.goals_management.dto.TaskWithoutGoalDTO;
-import com.example.goals_management.models.Goals;
+import com.example.goals_management.mapper.TaskMapper;
 import com.example.goals_management.models.Task;
-import com.example.goals_management.repository.GoalsRepo;
 import com.example.goals_management.repository.TaskRepo;
 @Service
 public class TaskService {
@@ -23,27 +23,22 @@ public class TaskService {
     @Autowired
     private TaskRepo taskRepo;
 
+    @Autowired
+    private TaskMapper taskMapper;
+
     public Optional<TaskDTO> createTask(TaskDTO taskDTO) {
-        Optional<Goals> goalOptional = goalsService.finGoal(taskDTO.getGoalId());
+        Optional<GoalGetDTO> goalOptional = goalsService.findGoal(taskDTO.getGoalId());
     
         if (goalOptional.isEmpty()) {
-            return Optional.empty(); // o lanzar una excepción si preferís
+            return Optional.empty(); 
         }
     
-        Task task = new Task();
-        task.setGoal(goalOptional.get());
-        task.setStatus(taskDTO.getStatus());
-        task.setTitle(taskDTO.getTitle());
-        task.setDescription(taskDTO.getDescription());
+        Task task =taskMapper.taskDTOToTask(taskDTO);
+    
     
         Task savedTask = taskRepo.save(task);
     
-        TaskDTO savedDTO = new TaskDTO();
-        savedDTO.setId(savedTask.getTaskId());
-        savedDTO.setTitle(savedTask.getTitle());
-        savedDTO.setDescription(savedTask.getDescription());
-        savedDTO.setStatus(savedTask.getStatus());
-        savedDTO.setGoalId(savedTask.getGoal().getGoalId());
+        TaskDTO savedDTO = taskMapper.taskToTaskDTO(savedTask);
     
         return Optional.of(savedDTO);
     }
@@ -53,12 +48,7 @@ public class TaskService {
         Task task=taskRepo.findById(id).get();
         task.setStatus(true);
         taskRepo.save(task);   
-        TaskGetDTO taskGetDTO=new TaskGetDTO();
-        taskGetDTO.setId(task.getTaskId());
-        taskGetDTO.setDescription(task.getDescription());
-        taskGetDTO.setGoalId(task.getGoal().getGoalId());
-        taskGetDTO.setStatus(task.getStatus());
-        taskGetDTO.setTitle(task.getTitle());
+        TaskGetDTO taskGetDTO=taskMapper.taskToTaskGetDTO(task);
         return Optional.of(taskGetDTO);
     }
 

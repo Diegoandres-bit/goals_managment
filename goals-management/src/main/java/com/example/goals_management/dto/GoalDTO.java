@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+
 @Data
 public class GoalDTO {
 
@@ -21,14 +22,8 @@ public class GoalDTO {
     @PositiveOrZero(message = "Daily hours must be 0 or more")
     private float dailyHours;
 
-    @NotBlank(message = "Status is required")
-    private Boolean status;
-
     private Long userId;
 
-    private LocalDate assignmentDate;
 
-    
-  
     
 }

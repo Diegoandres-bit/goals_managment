@@ -8,8 +8,9 @@ public class TaskDTO {
     @NotNull(message = "Goal ID is required")
     private Long goalId;
 
-    private Long id;
+    private Long taskId;
 
+    @NotNull(message = "Status is required")
     private Boolean status; 
 
     @NotBlank(message = "Title is required")

@@ -8,4 +8,5 @@ import lombok.Data;
 public class TaskByGoalIdDTO {
     private Long id;
     private List<TaskWithoutGoalDTO> tasks;  
+    
 }
