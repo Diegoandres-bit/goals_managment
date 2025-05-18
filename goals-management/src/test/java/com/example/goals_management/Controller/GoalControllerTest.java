@@ -1,5 +1,8 @@
 package com.example.goals_management.Controller;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -17,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.goals_management.controller.GoalController;
@@ -28,24 +32,27 @@ import com.example.goals_management.models.Goals;
 import com.example.goals_management.service.GoalsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static org.mockito.Mockito.doNothing;
 
 @WebMvcTest(GoalController.class)
+@ActiveProfiles("test")
 public class GoalControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean 
-     private GoalsService goalService;
+    @MockBean
+    private GoalsService goalService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    private  Goals goal;
+    private Goals goal;
     private GoalDTO goalDTO;
     private GoalPostPutDTO goalPostPutDTO;
     private GoalGetDTO goalGetDTO;
     private AssignGoalDTO assignGoalDTO;
+
     @BeforeEach
     public void setUp() {
         goal = new Goals();
@@ -80,32 +87,61 @@ goalDTO.setDailyHours(2);
 }
 
     @Test
-    void  testSaveGoal() throws Exception {
+    void testSaveGoal_Success() throws Exception {
         when(goalService.createGoal(any(GoalDTO.class))).thenReturn(Optional.of(goalPostPutDTO));
 
         mockMvc.perform(post("/api/goals/createGoal")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(goalDTO)))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.goalId").value(goal.getGoalId()))
-                .andExpect(jsonPath("$.description").value(goal.getDescription()));
+                .andExpect(jsonPath("$.description").value(goal.getDescription()))
+                .andExpect(jsonPath("$.estimatedDate").value(goal.getEstimatedDate().toString()))
+                .andExpect(jsonPath("$.userId").value(goal.getUserId()));
 
+        verify(goalService, times(1)).createGoal(any(GoalDTO.class));
     }
+
+ 
+
     @Test
-    void getTaskByGoalIdTest() throws Exception {
+    void getGoalDetails_Success() throws Exception {
         when(goalService.getGoalDetails(goal.getGoalId())).thenReturn(Optional.of(goalGetDTO));
         
-        mockMvc.perform(get("/api/goals/GetGoalDetails/1"))
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-       .andExpect(jsonPath("$.goalId").value(goal.getGoalId()))
-       .andExpect(jsonPath("$.description").value(goal.getDescription()));
+        mockMvc.perform(get("/api/goals/GetGoalDetails/{id}", goal.getGoalId()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.goalId").value(goal.getGoalId()))
+                .andExpect(jsonPath("$.description").value(goal.getDescription()))
+                .andExpect(jsonPath("$.estimatedDate").value(goal.getEstimatedDate().toString()))
+                .andExpect(jsonPath("$.userId").value(goal.getUserId()));
+
+        verify(goalService, times(1)).getGoalDetails(goal.getGoalId());
     }
+
     @Test
-    void testAssignGoalToUser() throws Exception {
+    void getGoalDetails_NotFound() throws Exception {
+        when(goalService.getGoalDetails(goal.getGoalId())).thenReturn(Optional.empty());
+        
+        mockMvc.perform(get("/api/goals/GetGoalDetails/{id}", goal.getGoalId()))
+        .andExpect(status().isNotFound());
+
+
+        verify(goalService, times(1)).getGoalDetails(goal.getGoalId());
+    }
+
+    @Test
+    void testAssignGoalToUser_Success() throws Exception {
+        doNothing().when(goalService).assignGoalToUser(any(AssignGoalDTO.class));
+
         mockMvc.perform(put("/api/goals/AssignGoal")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(assignGoalDTO)))
                 .andExpect(status().isOk());
+
+        verify(goalService, times(1)).assignGoalToUser(any(AssignGoalDTO.class));
     }
+
+   
 }

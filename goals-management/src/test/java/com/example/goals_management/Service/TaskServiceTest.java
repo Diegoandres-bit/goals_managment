@@ -1,8 +1,7 @@
 package com.example.goals_management.Service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,12 +13,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
 
-import com.example.goals_management.dto.GoalGetDTO;
-import com.example.goals_management.dto.TaskByGoalIdDTO;
-import com.example.goals_management.dto.TaskDTO;
-import com.example.goals_management.dto.TaskGetDTO;
-import com.example.goals_management.dto.TaskWithoutGoalDTO;
+import com.example.goals_management.dto.*;
 import com.example.goals_management.mapper.TaskMapper;
 import com.example.goals_management.models.Goals;
 import com.example.goals_management.models.Task;
@@ -28,6 +24,7 @@ import com.example.goals_management.service.GoalsService;
 import com.example.goals_management.service.TaskService;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 public class TaskServiceTest {
 
     @Mock
@@ -67,7 +64,6 @@ public class TaskServiceTest {
 
     @Test
     void testCreateTask_GoalExists() {
-        // Arrange
         when(goalsService.findGoal(1L)).thenReturn(Optional.of(new GoalGetDTO()));
         when(taskMapper.taskDTOToTask(taskDTO)).thenReturn(task);
         when(taskRepo.save(task)).thenReturn(task);
@@ -81,10 +77,8 @@ public class TaskServiceTest {
 
         when(taskMapper.taskToTaskDTO(task)).thenReturn(expectedDTO);
 
-        // Act
         Optional<TaskDTO> result = taskService.createTask(taskDTO);
 
-        // Assert
         assertTrue(result.isPresent());
         assertEquals(expectedDTO.getTaskId(), result.get().getTaskId());
         assertEquals(expectedDTO.getTitle(), result.get().getTitle());
@@ -100,8 +94,8 @@ public class TaskServiceTest {
     }
 
     @Test
-    void testMarkTaskAsCompleted() {
-        task.setStatus(false); // initial status
+    void testMarkTaskAsCompleted_Success() {
+        task.setStatus(false);
 
         when(taskRepo.findById(10L)).thenReturn(Optional.of(task));
         when(taskRepo.save(task)).thenReturn(task);
@@ -119,35 +113,60 @@ public class TaskServiceTest {
         assertTrue(result.isPresent());
         assertEquals(10L, result.get().getTaskId());
         assertTrue(result.get().getStatus());
+        verify(taskRepo, times(1)).save(task);
+        verify(taskRepo, times(1)).findById(10L);
     }
 
-   @Test
-void testGetTaskByGoalId() {
-    Long goalId = 1L;
+    @Test
+    void testMarkTaskAsCompleted_TaskNotFound() {
+        when(taskRepo.findById(10L)).thenReturn(Optional.empty());
 
-    TaskWithoutGoalDTO task1 = new TaskWithoutGoalDTO();
-    task1.setTask_id(1L);
-    task1.setStatus(false);
-    task1.setTitle("Tarea 1");
-    task1.setDescription("Descripción 1");
+        Optional<TaskGetDTO> result = taskService.markTaskAsCompleted(10L);
 
-    TaskWithoutGoalDTO task2 = new TaskWithoutGoalDTO();
-    task2.setTask_id(2L);
-    task2.setStatus(true);
-    task2.setTitle("Tarea 2");
-    task2.setDescription("Descripción 2");
+        assertTrue(result.isEmpty());
+        verify(taskRepo, never()).save(any());
+    }
 
-    List<TaskWithoutGoalDTO> list = Arrays.asList(task1, task2);
+    @Test
+    void testGetTaskByGoalId_Success() {
+        Long goalId = 1L;
 
-    when(taskRepo.findByGoalId(goalId)).thenReturn(list);
+        TaskWithoutGoalDTO task1 = new TaskWithoutGoalDTO();
+        task1.setTask_id(1L);
+        task1.setStatus(false);
+        task1.setTitle("Task 1");
+        task1.setDescription("Description 1");
 
-    Optional<TaskByGoalIdDTO> result = taskService.getTaskByGoalId(goalId);
+        TaskWithoutGoalDTO task2 = new TaskWithoutGoalDTO();
+        task2.setTask_id(2L);
+        task2.setStatus(true);
+        task2.setTitle("Task 2");
+        task2.setDescription("Description 2");
 
-    assertTrue(result.isPresent());
-    assertEquals(goalId, result.get().getId());
-    assertEquals(2, result.get().getTasks().size());
-    assertEquals("Tarea 1", result.get().getTasks().get(0).getTitle());
-    assertEquals("Tarea 2", result.get().getTasks().get(1).getTitle());
-}
+        List<TaskWithoutGoalDTO> list = Arrays.asList(task1, task2);
 
+        when(taskRepo.findByGoalId(goalId)).thenReturn(list);
+
+        Optional<TaskByGoalIdDTO> result = taskService.getTaskByGoalId(goalId);
+
+        assertTrue(result.isPresent());
+        assertEquals(goalId, result.get().getId());
+        assertEquals(2, result.get().getTasks().size());
+        assertEquals("Task 1", result.get().getTasks().get(0).getTitle());
+        assertEquals("Task 2", result.get().getTasks().get(1).getTitle());
+        verify(taskRepo, times(1)).findByGoalId(goalId);
+    }
+
+    @Test
+    void testGetTaskByGoalId_NoTasksFound() {
+        Long goalId = 1L;
+        when(taskRepo.findByGoalId(goalId)).thenReturn(Arrays.asList());
+
+        Optional<TaskByGoalIdDTO> result = taskService.getTaskByGoalId(goalId);
+
+        assertTrue(result.isPresent());
+        assertEquals(goalId, result.get().getId());
+        assertTrue(result.get().getTasks().isEmpty());
+        verify(taskRepo, times(1)).findByGoalId(goalId);
+    }
 }

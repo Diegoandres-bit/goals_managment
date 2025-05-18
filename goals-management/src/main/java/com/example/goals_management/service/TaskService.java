@@ -43,13 +43,13 @@ public class TaskService {
         return Optional.of(savedDTO);
     }
     
-    public Optional<TaskGetDTO> markTaskAsCompleted(Long id){
-
-        Task task=taskRepo.findById(id).get();
-        task.setStatus(true);
-        taskRepo.save(task);   
-        TaskGetDTO taskGetDTO=taskMapper.taskToTaskGetDTO(task);
-        return Optional.of(taskGetDTO);
+    public Optional<TaskGetDTO> markTaskAsCompleted(Long id) {
+        return taskRepo.findById(id)
+            .map(task -> {
+                task.setStatus(true);
+                taskRepo.save(task);
+                return taskMapper.taskToTaskGetDTO(task);
+            });
     }
 
     public Optional<TaskByGoalIdDTO> getTaskByGoalId(Long id){

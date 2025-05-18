@@ -22,7 +22,7 @@
   </properties>
 
   <dependencies>
-    <!-- Spring -->
+    <!-- Spring Boot Starters -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -36,7 +36,7 @@
       <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
 
-    <!-- MySQL -->
+    <!-- MySQL Connector -->
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
@@ -51,7 +51,7 @@
       <version>1.5.5.Final</version>
     </dependency>
 
-    <!-- Validations -->
+    <!-- Jakarta Validation API -->
     <dependency>
       <groupId>jakarta.validation</groupId>
       <artifactId>jakarta.validation-api</artifactId>
@@ -81,23 +81,24 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- Testing -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+    
+  <!-- Testing -->
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>org.mockito</groupId>
+    <artifactId>mockito-core</artifactId>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>test</scope>
+  </dependency>
+</dependencies>
 
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
@@ -106,8 +107,9 @@
         <directory>src/main/resources</directory>
       </resource>
     </resources>
+
     <plugins>
-      <!-- Compilador -->
+      <!-- Maven Compiler Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -130,7 +132,7 @@
         </configuration>
       </plugin>
 
-      <!-- JaCoCo para cobertura de tests -->
+      <!-- JaCoCo Plugin para cobertura -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -151,7 +153,7 @@
         </executions>
       </plugin>
 
-      <!-- Plugin Spring Boot -->
+      <!-- Spring Boot Maven Plugin -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>

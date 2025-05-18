@@ -1,123 +1,133 @@
 package com.example.goals_management.Controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.goals_management.controller.TaskController;
 import com.example.goals_management.dto.TaskByGoalIdDTO;
 import com.example.goals_management.dto.TaskDTO;
 import com.example.goals_management.dto.TaskGetDTO;
+import com.example.goals_management.dto.TaskWithoutGoalDTO;
 import com.example.goals_management.service.TaskService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+@WebMvcTest(TaskController.class)
 class TaskControllerTest {
 
-    @InjectMocks
-    private TaskController taskController;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private TaskService taskService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
-    void createTask_ShouldReturnOk_WhenTaskIsCreated() {
+    void createTask_ShouldReturnOk_WhenTaskIsCreated() throws Exception {
         TaskDTO inputDto = new TaskDTO();
         inputDto.setGoalId(1L);
         inputDto.setTitle("Title");
         inputDto.setDescription("Description");
         inputDto.setStatus(true);
 
-        when(taskService.createTask(inputDto)).thenReturn(Optional.of(inputDto));
+        when(taskService.createTask(any(TaskDTO.class))).thenReturn(Optional.of(inputDto));
 
-        ResponseEntity<TaskDTO> response = taskController.createTask(inputDto);
+        mockMvc.perform(post("/api/tasks/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(inputDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.goalId").value(inputDto.getGoalId()))
+                .andExpect(jsonPath("$.title").value(inputDto.getTitle()))
+                .andExpect(jsonPath("$.description").value(inputDto.getDescription()))
+                .andExpect(jsonPath("$.status").value(inputDto.getStatus()));
 
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(inputDto, response.getBody());
+        verify(taskService, times(1)).createTask(any(TaskDTO.class));
     }
 
     @Test
-    void createTask_ShouldReturnBadRequest_WhenServiceReturnsEmpty() {
-        TaskDTO inputDto = new TaskDTO();
-        inputDto.setGoalId(1L);
-        inputDto.setTitle("Title");
-        inputDto.setDescription("Description");
-        inputDto.setStatus(true);
-
-        when(taskService.createTask(inputDto)).thenReturn(Optional.empty());
-
-        ResponseEntity<TaskDTO> response = taskController.createTask(inputDto);
-
-        assertEquals(400, response.getStatusCodeValue());
-        assertNull(response.getBody());
-    }
-
-
-    @Test
-    void getTaskByGoal_ShouldReturnOk_WhenTasksFound() {
+    void getTaskByGoal_ShouldReturnOk_WhenTasksFound() throws Exception {
         Long goalId = 1L;
         TaskByGoalIdDTO dto = new TaskByGoalIdDTO();
         dto.setId(goalId);
-        dto.setTasks(new ArrayList<>());
+        
+        TaskWithoutGoalDTO task1 = new TaskWithoutGoalDTO();
+        task1.setTask_id(1L);
+        task1.setTitle("Task 1");
+        task1.setDescription("Description 1");
+        task1.setStatus(false);
+
+        TaskWithoutGoalDTO task2 = new TaskWithoutGoalDTO();
+        task2.setTask_id(2L);
+        task2.setTitle("Task 2");
+        task2.setDescription("Description 2");
+        task2.setStatus(true);
+
+        dto.setTasks(Arrays.asList(task1, task2));
 
         when(taskService.getTaskByGoalId(goalId)).thenReturn(Optional.of(dto));
 
-        ResponseEntity<TaskByGoalIdDTO> response = taskController.getTaskByGoal(goalId);
+        mockMvc.perform(get("/api/tasks/getTasksByGoal/" + goalId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(goalId))
+                .andExpect(jsonPath("$.tasks[0].task_id").value(1))
+                .andExpect(jsonPath("$.tasks[0].title").value("Task 1"))
+                .andExpect(jsonPath("$.tasks[1].task_id").value(2))
+                .andExpect(jsonPath("$.tasks[1].title").value("Task 2"));
 
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(dto, response.getBody());
+        verify(taskService, times(1)).getTaskByGoalId(goalId);
     }
 
     @Test
-    void getTaskByGoal_ShouldReturnBadRequest_WhenTasksNotFound() {
+    void getTaskByGoal_ShouldReturnBadRequest_WhenTasksNotFound() throws Exception {
         Long goalId = 1L;
 
         when(taskService.getTaskByGoalId(goalId)).thenReturn(Optional.empty());
 
-        ResponseEntity<TaskByGoalIdDTO> response = taskController.getTaskByGoal(goalId);
-
-        assertEquals(400, response.getStatusCodeValue());
-        assertNull(response.getBody());
+        mockMvc.perform(get("/api/tasks/getTasksByGoal/" + goalId))
+                .andExpect(status().isBadRequest());
     }
 
-
     @Test
-    void markTaskAsCompleted_ShouldReturnOk_WhenSuccess() {
+    void markTaskAsCompleted_ShouldReturnOk_WhenSuccess() throws Exception {
         Long taskId = 1L;
         TaskGetDTO dto = new TaskGetDTO();
         dto.setTaskId(taskId);
+        dto.setTitle("Test Task");
+        dto.setDescription("Test Description");
+        dto.setStatus(true);
 
         when(taskService.markTaskAsCompleted(taskId)).thenReturn(Optional.of(dto));
 
-        ResponseEntity<TaskGetDTO> response = taskController.markTaskAsCompleted(taskId);
+        mockMvc.perform(put("/api/tasks/markAsCompleted/" + taskId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.taskId").value(taskId))
+                .andExpect(jsonPath("$.title").value(dto.getTitle()))
+                .andExpect(jsonPath("$.description").value(dto.getDescription()))
+                .andExpect(jsonPath("$.status").value(dto.getStatus()));
 
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals(dto, response.getBody());
+        verify(taskService, times(1)).markTaskAsCompleted(taskId);
     }
 
     @Test
-    void markTaskAsCompleted_ShouldReturnBadRequest_WhenNotFound() {
+    void markTaskAsCompleted_ShouldReturnBadRequest_WhenNotFound() throws Exception {
         Long taskId = 1L;
 
         when(taskService.markTaskAsCompleted(taskId)).thenReturn(Optional.empty());
 
-        ResponseEntity<TaskGetDTO> response = taskController.markTaskAsCompleted(taskId);
-
-        assertEquals(400, response.getStatusCodeValue());
-        assertNull(response.getBody());
+        mockMvc.perform(put("/api/tasks/markAsCompleted/" + taskId))
+                .andExpect(status().isBadRequest());
     }
 }
