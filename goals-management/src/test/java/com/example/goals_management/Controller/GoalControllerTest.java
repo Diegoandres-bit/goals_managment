@@ -52,6 +52,7 @@ public class GoalControllerTest {
     private GoalPostPutDTO goalPostPutDTO;
     private GoalGetDTO goalGetDTO;
     private AssignGoalDTO assignGoalDTO;
+    private String authorization;
 
     @BeforeEach
     public void setUp() {
@@ -84,6 +85,8 @@ goalDTO.setDailyHours(2);
         assignGoalDTO = new AssignGoalDTO();
         assignGoalDTO.setGoalId(1L);
         assignGoalDTO.setUserId(1L);
+
+        authorization = "Bearer token";
 }
 
     @Test
@@ -133,14 +136,14 @@ goalDTO.setDailyHours(2);
 
     @Test
     void testAssignGoalToUser_Success() throws Exception {
-        doNothing().when(goalService).assignGoalToUser(any(AssignGoalDTO.class));
+        doNothing().when(goalService).assignGoalToUser(any(AssignGoalDTO.class), any(String.class));
 
         mockMvc.perform(put("/api/goals/AssignGoal")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(assignGoalDTO)))
                 .andExpect(status().isOk());
 
-        verify(goalService, times(1)).assignGoalToUser(any(AssignGoalDTO.class));
+        verify(goalService, times(1)).assignGoalToUser(any(AssignGoalDTO.class), any(String.class));
     }
 
    

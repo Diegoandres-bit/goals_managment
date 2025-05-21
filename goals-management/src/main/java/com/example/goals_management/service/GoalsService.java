@@ -12,7 +12,7 @@ import com.example.goals_management.dto.GoalPostPutDTO;
 import com.example.goals_management.mapper.GoalMapper;
 import com.example.goals_management.models.Goals;
 import com.example.goals_management.repository.GoalsRepo;
-
+import com.example.goals_management.client.ApiClient;
 
 @Service
 public class GoalsService {
@@ -22,6 +22,10 @@ public class GoalsService {
 
     @Autowired
     private GoalMapper goalMapper;
+
+    @Autowired
+    private ApiClient apiClient;
+
 
     public Optional<GoalGetDTO> getGoalDetails(Long goalId) {
         Optional<Goals> goal = goalsRepo.findById(goalId);
@@ -35,12 +39,16 @@ public class GoalsService {
   
     }
 
-    public void assignGoalToUser(AssignGoalDTO assignGoalDTO) {
+    public void assignGoalToUser(AssignGoalDTO assignGoalDTO, String authorization) {
         Long goalId = assignGoalDTO.getGoalId();
         Long userId = assignGoalDTO.getUserId();
         Optional<Goals> goal = goalsRepo.findById(goalId);
 
         //validate if user id exist
+        Boolean employeeExists = apiClient.employeeExists(userId, authorization);
+        if (employeeExists == null || !employeeExists) {
+            throw new IllegalArgumentException("Employee does not exist or request failed");
+        }
 
         if (goal.isPresent()) {
 

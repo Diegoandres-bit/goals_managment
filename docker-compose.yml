@@ -9,9 +9,9 @@ services:
         mysql-goals-manag:
           condition: service_healthy
       ports:
-        - "9020:8080"
+        - "1114:8080"
       networks:
-        - goals-manag
+        - red_microservicios
     #  --------------------------------------------
     mysql-goals-manag:
       build:
@@ -21,9 +21,9 @@ services:
       volumes:
         - ./MySQL/mysql_data:/var/lib/mysql
       ports:
-        - "8012:3306"
+        - "1113:3306"
       networks:
-        - goals-manag
+        - red_microservicios
       healthcheck:
         test: [ "CMD","mysql", "-u", "sdgrh", "-psdgrh123*" ]
         interval: 30s
@@ -36,11 +36,10 @@ services:
       depends_on:
         - mysql-goals-manag
       ports:
-        - "9010:8080"
+        - "1112:8080"
       networks:
-        - goals-manag
+        - red_microservicios
   #  --------------------------------------------
 networks:
-  goals-manag:
-    driver: bridge
-    name: goals-manag
+  red_microservicios:
+    external: true

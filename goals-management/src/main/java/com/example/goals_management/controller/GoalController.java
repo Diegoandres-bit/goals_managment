@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import com.example.goals_management.dto.AssignGoalDTO;
 import com.example.goals_management.dto.GoalDTO;
@@ -41,8 +42,8 @@ public class GoalController {
     }
 
     @PutMapping ("/AssignGoal")
-    public void updateGoal(@Valid @RequestBody AssignGoalDTO assignGoalDTO) {
-        goalsService.assignGoalToUser(assignGoalDTO);
+    public void updateGoal(@Valid @RequestBody AssignGoalDTO assignGoalDTO, @RequestHeader("Authorization") String authorizationHeader) {
+        goalsService.assignGoalToUser(assignGoalDTO,authorizationHeader);
     }
 
 }

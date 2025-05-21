@@ -42,6 +42,7 @@ public class GoalServiceTest {
     private GoalDTO goalDTO;
     private GoalPostPutDTO goalPostPutDTO;
     private GoalGetDTO goalGetDTO;
+    private String authorization;
 
     @BeforeEach
     public void setup() {
@@ -67,6 +68,8 @@ public class GoalServiceTest {
         goalGetDTO.setDescription(goal.getDescription());
         goalGetDTO.setEstimatedDate(goal.getEstimatedDate());
         goalGetDTO.setUserId(goal.getUserId());
+
+        authorization = "Bearer token";
     }
 
     @Test
@@ -102,7 +105,7 @@ public class GoalServiceTest {
 
         when(goalRepository.findById(goal.getGoalId())).thenReturn(Optional.of(goal));
 
-        goalService.assignGoalToUser(assignGoalDTO);
+        goalService.assignGoalToUser(assignGoalDTO, authorization);
 
         assertEquals(goal.getUserId(), assignGoalDTO.getUserId());
     }
@@ -121,7 +124,7 @@ public class GoalServiceTest {
 
         when(goalRepository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> goalService.assignGoalToUser(assignGoalDTO));
+        assertThrows(RuntimeException.class, () -> goalService.assignGoalToUser(assignGoalDTO, authorization));
     }
 
     @Test
