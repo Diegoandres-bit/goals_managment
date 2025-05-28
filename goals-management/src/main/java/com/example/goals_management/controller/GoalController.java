@@ -21,29 +21,47 @@ import com.example.goals_management.service.GoalsService;
 
 import jakarta.validation.Valid;
 
-@RestController
-@RequestMapping("/api/goals")
+@RestController  // Marks this class as a REST controller
+@RequestMapping("/api/goals")  // Base URL path for goal-related endpoints
 public class GoalController {
     
-    @Autowired
+    @Autowired  // Injects the GoalsService to handle business logic
     private GoalsService goalsService;
 
-
-
+    /**
+     * Endpoint to create a new goal.
+     * @param assignGoalDTO The goal data passed in the request body, validated.
+     * @return HTTP 200 with created GoalPostPutDTO if successful, or 404 Not Found if failed.
+     */
     @PostMapping("/createGoal")
     public ResponseEntity<GoalPostPutDTO> createGoal(@Valid @RequestBody GoalDTO assignGoalDTO) {
-        return goalsService.createGoal(assignGoalDTO).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-
+        return goalsService.createGoal(assignGoalDTO)
+            .map(ResponseEntity::ok)                  // Return 200 OK with created goal
+            .orElse(ResponseEntity.notFound().build()); // Return 404 if creation failed
     }
 
+    /**
+     * Endpoint to get goal details by ID.
+     * @param id the goal ID path variable.
+     * @return HTTP 200 with GoalGetDTO if found, or 404 Not Found if no goal exists.
+     */
     @GetMapping("/GetGoalDetails/{id}")
     public ResponseEntity<GoalGetDTO> getGoalDetails(@PathVariable Long id) {
-        return goalsService.getGoalDetails(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build()); 
+        return goalsService.getGoalDetails(id)
+            .map(ResponseEntity::ok)                   // Return 200 OK with goal details
+            .orElse(ResponseEntity.notFound().build()); // Return 404 if goal not found
     }
 
-    @PutMapping ("/AssignGoal")
-    public void updateGoal(@Valid @RequestBody AssignGoalDTO assignGoalDTO, @RequestHeader("Authorization") String authorizationHeader) {
-        goalsService.assignGoalToUser(assignGoalDTO,authorizationHeader);
+    /**
+     * Endpoint to assign a goal to a user.
+     * @param assignGoalDTO the DTO containing goalId and userId, validated.
+     * @param authorizationHeader the Authorization header used for user validation.
+     * No response body; this method performs the update or throws an exception if failed.
+     */
+    @PutMapping("/AssignGoal")
+    public void updateGoal(@Valid @RequestBody AssignGoalDTO assignGoalDTO, 
+                           @RequestHeader("Authorization") String authorizationHeader) {
+        goalsService.assignGoalToUser(assignGoalDTO, authorizationHeader);
     }
 
 }
